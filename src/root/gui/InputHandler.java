@@ -63,6 +63,13 @@ public class InputHandler implements EventHandler<InputEvent>
 			cam.translateXup();
 			prog.setRedraw();
 			break;
+
+		// TEST
+		case "P":
+			System.out.println("TEST");
+			prog.drawALL = !prog.drawALL;
+			prog.redraw = true;
+			break;
 		}
 	}
 }

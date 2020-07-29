@@ -11,8 +11,13 @@ import java.util.Scanner;
  */
 public class MainClass 
 {
-	private  PrioritySearchTree tree;
+	private  PrioritySearchTree treeHor;
+	private  PrioritySearchTree treeVer;
+
 	private WindowingBox box;
+
+	// TEST TEST 
+	public ArrayList<Segment> ALLSEG;
 	
 	/**
 	 * Initialise la classe en chargant le fichier depuis la chaine de 
@@ -24,12 +29,31 @@ public class MainClass
 		box = new WindowingBox(0, 0, 200, 200);
 		try 
 		{
-			final ArrayList<Segment> segList = loadFromFile(path);
+			// final ArrayList<Segment> segList = loadFromFile(path);
 
-			//trie par ordre croissant selon les y
-			Segment.sort(segList);
+			// //trie par ordre croissant selon les y
+			// Segment.sort(segList);
 
-			this.tree = new PrioritySearchTree(segList);
+			ArrayList<Segment> segHor = new ArrayList<>();
+			ArrayList<Segment> segVer = new ArrayList<>();
+
+			ALLSEG = new ArrayList<>();
+
+			for(Segment s: loadFromFile(path))
+			{
+				// TEST
+				ALLSEG.add(s);
+				// TEST END
+
+				if(s.getX() == s.getXend()) // si vertical
+					// rotation du referenciel
+					segVer.add(new Segment(s.getY(),s.getX(),s.getYend(),s.getXend()));
+				else
+					segHor.add(s);	
+			}
+
+			this.treeHor = new PrioritySearchTree(segHor);
+			this.treeVer = new PrioritySearchTree(segVer);
 			
 		} catch (FileNotFoundException e) 
 		{
@@ -45,7 +69,22 @@ public class MainClass
 	 * Methode qui permet de lancer la recherche dans l'arbre 
 	 * ainsi que d'afficher les segments resultant de cette recherche
 	 */
-	public void computeTree() { tree.queryPrioSearchTree(box); }
+	public ArrayList<Segment> computeTree() 
+	{ 
+		ArrayList<Segment> res = treeHor.queryPrioSearchTree(box);
+
+		// change le referenciel de la fenetre de windowing
+		for(Segment s : treeVer.queryPrioSearchTree(new WindowingBox(box.getYstart(), box.getXstart(), box.getYend(), box.getXend())))
+		{
+			res.add(new Segment(s.getY(),s.getX(),s.getYend(),s.getXend()));
+		}
+
+		return res;
+		//// TO DO AJOUTER EN CHANGENT DE REFERENCIEL
+		
+		// change le referenciel de la fenetre de windowing
+		// treeVer.queryPrioSearchTree(new WindowingBox(box.getYstart(), box.getXstart(), box.getYend(), box.getXend())); 
+	}
 	
 	/**
 	 * Methode qui charge un fichier pour le transformer 
@@ -91,6 +130,7 @@ public class MainClass
 	// set et get
 	public void setWindowingBox(WindowingBox box) { this.box = box; }
 	
-	public PrioritySearchTree getTree()      { return tree;     }
-	public WindowingBox getWindowingBox()    { return box;      }
+	// public PrioritySearchTree getTreeHor()  { return treeHor; }
+	// public PrioritySearchTree getTreeVer()  { return treeHor; }
+	public WindowingBox getWindowingBox()   { return box;     }
 }

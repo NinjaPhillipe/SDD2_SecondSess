@@ -22,7 +22,7 @@ public class Segment
 	private static class SortYstart implements Comparator<Segment>
 	{
 		/**
-		 * retourn un entier positif si a est plus grand que b et inversement.
+		 * retourne un entier positif si a est plus grand que b et inversement.
 		 */
 		public int compare(Segment a, Segment b)
 		{

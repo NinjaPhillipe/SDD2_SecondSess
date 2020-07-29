@@ -10,7 +10,6 @@ import javafx.scene.canvas.GraphicsContext;
 public class PrioritySearchTree 
 {
 	private Segment root;
-	public static GraphicsContext gc;
 	
 	private PrioritySearchTree left  = null;
 	private PrioritySearchTree right = null;
@@ -110,13 +109,20 @@ public class PrioritySearchTree
 	 * Execute la recherche dans l'arbre de priorite en fonction d'une fenetre
 	 * @param window fenetre sur laquel on execute la recherche
 	 */
-	public void queryPrioSearchTree(final WindowingBox window)
+	public ArrayList<Segment> queryPrioSearchTree(final WindowingBox window)
 	{
+		ArrayList<Segment> res;
+
 		this.bigMarkQy(window.getYend());
 		this.smallMarkQy(window.getYstart()); 
 		//recherche centre et gauche car meme borne y
-		researchCenterLeft(window,Choice.CENTER);
-		researchCenterLeft(window,Choice.LEFT);
+
+		// recherche ceux qui ont leurs point min dans le centre 
+		res = researchCenterLeft(window,Choice.CENTER);
+
+		//recherche ceux qui ont une borne en dehors 
+		res.addAll( researchCenterLeft(window,Choice.LEFT) );
+
 		this.unBigMarkQy();
 		this.unSmallMarkQy();
 
@@ -125,6 +131,8 @@ public class PrioritySearchTree
 		// comme il y a seulement une big mark un seul parcours est necessaire.
 		this.travelBigMarkY(window,Choice.DOWN); 
 		this.unBigMarkQy();
+
+		return res;
 	}
 
 	/**
@@ -132,15 +140,22 @@ public class PrioritySearchTree
 	 * @param window fenetre de windowing
 	 * @param choice center ou left
 	 */
-	private void researchCenterLeft(final WindowingBox window,final Choice choice)
+	private ArrayList<Segment> researchCenterLeft(final WindowingBox window,final Choice choice)
 	{
+		ArrayList<Segment> segAccepted = new ArrayList<>();
+
 		// prcourir le chemin commun ou bigMark et smallMark sont confondu
 		PrioritySearchTree tmp        = this;
 		PrioritySearchTree firstBig   = null;
 		PrioritySearchTree firstSmall = null;
-		while ( true ) 
+
+		// vrai tant que big et small sont confondu
+		boolean same = true;
+
+		while ( same ) 
 		{
-			accepted(tmp.root,window,choice);
+			if(accepted(tmp.root,window,choice))
+				segAccepted.add(tmp.root);
 			
 			// si bigmark et small mark sont a droite 
 			if(tmp.right!=null && tmp.right.root.isBigMarkY() && tmp.right.root.isSmallMarkY())
@@ -148,15 +163,19 @@ public class PrioritySearchTree
 			// si big mark et small mark sont a gauche
 			else if(tmp.left!=null && tmp.left.root.isBigMarkY() && tmp.left.root.isSmallMarkY())
 				tmp = tmp.left;
+			// sinon si big et small ne sont pas confondu
 			else
 			{
 				if(tmp.right !=null && tmp.right.root.isBigMarkY()) firstBig = tmp.right;
 				if(tmp.left !=null && tmp.left.root.isSmallMarkY()) firstSmall = tmp.left;
-				break;
+				same = false;
 			}
 		}
-		if(firstBig   != null) firstBig.travelBigMarkY(window,choice);
-		if(firstSmall != null) firstSmall.travelSmallMarkY(window,choice);
+
+		if(firstBig   != null) segAccepted.addAll( firstBig.travelBigMarkY(window,choice)     );
+		if(firstSmall != null) segAccepted.addAll( firstSmall.travelSmallMarkY(window,choice) );
+
+		return segAccepted;
 	}
 
 	/**
@@ -165,8 +184,9 @@ public class PrioritySearchTree
 	 * @param window fenetre de windowing
 	 * @param choice choix 
 	 */
-	private void travelBigMarkY(final WindowingBox window,final Choice choice)
+	private ArrayList<Segment> travelBigMarkY(final WindowingBox window,final Choice choice)
 	{
+		ArrayList<Segment> segAccepted = new ArrayList<>();
 		// pour chaque noeud sur le chemin de qy' 
 		PrioritySearchTree tmp = this;
 
@@ -174,13 +194,14 @@ public class PrioritySearchTree
 		while( tmp != null ) // garde fous
 		{
 			// si le noeud est accepter dessiner le segment
-			accepted(tmp.root,window,choice);
+			if(accepted(tmp.root,window,choice))
+				segAccepted.add(tmp.root);
 
 			// si big mark est a droite et que small mark n y est pas 
 			if(tmp.right != null && tmp.right.root.isBigMarkY())
 			{ 
 				// et que a left n est pas vide 
-				if(	tmp.left != null ) tmp.left.reportInSubTree(window,choice);
+				if(	tmp.left != null ) segAccepted.addAll( tmp.left.reportInSubTree(window,choice) );
 
 				tmp = tmp.right;
 			}
@@ -188,6 +209,7 @@ public class PrioritySearchTree
 			else if(tmp.left != null && tmp.left.root.isBigMarkY()) tmp = tmp.left;
 			else break;
 		}
+		return segAccepted;
 	}
 
 	/**
@@ -196,8 +218,9 @@ public class PrioritySearchTree
 	 * @param window fenetre de windowing
 	 * @param choice choix 
 	 */
-	private void travelSmallMarkY(final WindowingBox window,final Choice choice)
+	private ArrayList<Segment> travelSmallMarkY(final WindowingBox window,final Choice choice)
 	{
+		ArrayList<Segment> res = new ArrayList<>();
 		// pour chaque noeud sur le chemin de qy' 
 		PrioritySearchTree tmp = this;
 
@@ -205,13 +228,14 @@ public class PrioritySearchTree
 		while( tmp != null )
 		{
 			// si le noeud est accepter
-			accepted(tmp.root,window,choice);
+			if(accepted(tmp.root,window,choice))
+				res.add(tmp.root);
 			
 			// si small mark est a gauche et que small mark n y est pas 
 			if(tmp.left != null && tmp.left.root.isSmallMarkY() )
 			{ 
 				// et que a left n est pas vide 
-				if(	tmp.right != null ) tmp.right.reportInSubTree(window,choice);
+				if(	tmp.right != null )  res.addAll( tmp.right.reportInSubTree(window,choice) );
 
 				tmp = tmp.left;
 			}
@@ -219,6 +243,7 @@ public class PrioritySearchTree
 			else if(tmp.right != null && tmp.right.root.isSmallMarkY()) tmp = tmp.right;
 			else break;
 		}
+		return res;
 	}
 
 	/**
@@ -247,17 +272,21 @@ public class PrioritySearchTree
 	 * @param win fenetre de windowing
 	 * @param choice choix
 	 */
-	private void reportInSubTree(final WindowingBox win,final Choice choice)
+	private ArrayList<Segment> reportInSubTree(final WindowingBox win,final Choice choice)
 	{
+		ArrayList<Segment> res = new ArrayList<>();
 		// on doit report dans le sub tree 
-		accepted(root,win,choice);
+		if(accepted(root,win,choice))
+			res.add(root);
 
 		if(right != null
 				&& right.root.getX() <= borneXsup(choice, win) ) // pour s arreter a x max 
-			right.reportInSubTree(win,choice);
+			res.addAll( right.reportInSubTree(win,choice) );
 		if(left  != null 
 				&& left.root.getX()  <= borneXsup(choice, win) ) // pour s arreter a x max
-			left.reportInSubTree(win,choice);
+			res.addAll( left.reportInSubTree(win,choice) );
+
+		return res;
 	}
 
 	/**
@@ -275,34 +304,22 @@ public class PrioritySearchTree
 			case CENTER:
 				if (win.getXstart() <= seg.getX() && seg.getX() <= win.getXend()
 					&& win.getYstart() <= seg.getY() && seg.getY() <= win.getYend())
-					{
-						if(gc != null)
-							gc.strokeLine(Math.max(seg.getX(),win.getXstart() ), Math.max(seg.getY(),win.getYstart()) ,
-											Math.min(seg.getXend(),win.getXend() ), Math.min(seg.getYend(),win.getYend() ));
-						return true;
-					}break;
+					return true;
+				break;
 			case LEFT:
 				if (seg.getX() <= win.getXstart()      // le premier point est a gauche de la fenetre
 					&& win.getYstart() <= seg.getY() && seg.getY() <= win.getYend()
 					&&win.getXstart() <= seg.getXend() 		 // le second point est dans la fenetre dans la borne y 
 					&& win.getYstart() <= seg.getYend() && seg.getYend() <= win.getYend())
-					{
-						if(gc != null)
-							gc.strokeLine(Math.max(seg.getX(),win.getXstart() ), Math.max(seg.getY(),win.getYstart()) ,
-											Math.min(seg.getXend(),win.getXend() ), Math.min(seg.getYend(),win.getYend() ));
-						return true;
-					}break;
+					return true;
+				break;
 			case DOWN:
 				if (win.getXstart() <= seg.getX() && seg.getX() <= win.getXend() // le premier point est en dessous de la fenetre
 					&& seg.getY() <= win.getYstart() 
 					&& win.getXstart() <= seg.getXend() && seg.getXend() <= win.getXend() // le second point est dans la fenetre par rapport a x et au dessus de y min
 					&& win.getYstart() <= seg.getYend() )
-					{
-						if(gc != null)
-							gc.strokeLine(Math.max(seg.getX(),win.getXstart() ), Math.max(seg.getY(),win.getYstart()) ,
-											Math.min(seg.getXend(),win.getXend() ), Math.min(seg.getYend(),win.getYend() ));
-						return true;
-					}break;
+					return true;
+				break;
 		}
 		return false;
 	}

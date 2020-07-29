@@ -29,8 +29,8 @@ import javafx.stage.Stage;
 import javafx.stage.FileChooser.ExtensionFilter;
 import root.main.MainClass;
 import root.main.PrioritySearchTree;
-import root.main.Segment;
 import root.main.WindowingBox;
+import root.main.Segment;
 
 /*
  * Fenetre principale de l'application
@@ -49,11 +49,14 @@ public class TestProg extends Application
     private TextField textfield_x_end;
     private TextField textfield_y_end;
     
-    private boolean redraw = true;
+    public boolean redraw = true;
     
     private MainClass mainClass;
     private Stage stage;
 	private Camera2D camera;
+
+	// TEST TEST
+	public boolean drawALL = false;
 	
 	@Override
 	public void start(final Stage stage) {
@@ -69,7 +72,6 @@ public class TestProg extends Application
 		final Canvas canvas = new Canvas(WIDTH, HEIGHT);
 		final GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setLineWidth(0.1f);
-		PrioritySearchTree.gc = gc;
 		
 		sub_root.getChildren().add(canvas);
 
@@ -103,13 +105,12 @@ public class TestProg extends Application
 		
 		// creation d'un AnimationTimer afin de redessiner la scene lorsque cela est necessaire
         final AnimationTimer animator = new AnimationTimer(){
-			long stt,sttb;
             @Override
             public void handle(final long arg0) {
 				// redessine la scene si elle en a besoin
-            	if(redraw && mainClass != null) {
-					stt = System.currentTimeMillis();
 
+				if(redraw && mainClass != null) {
+					
 					// clear la scene pour ne pas avoir de superposition
 					gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 					gc.save();
@@ -121,16 +122,38 @@ public class TestProg extends Application
 					System.out.println("\nDraw windowed Segments");
 					long startTime = System.currentTimeMillis();
 					// cherche les segments a afficher.
-					mainClass.computeTree();
+					
+					WindowingBox box = mainClass.getWindowingBox();
+
+					if(drawALL)
+					{
+						for (Segment seg : mainClass.ALLSEG)
+						{
+							gc.strokeLine(seg.getX(), seg.getY() ,
+								seg.getXend(), seg.getYend() );
+						
+						}
+					}
+					else
+					{
+						for (Segment seg : mainClass.computeTree())
+						{
+							gc.strokeLine(Math.max(seg.getX(),box.getXstart() ), Math.max(seg.getY(),box.getYstart()) ,
+								Math.min(seg.getXend(),box.getXend() ), Math.min(seg.getYend(),box.getYend() ));
+						}
+					}
+
+
+
 					long elapsed = System.currentTimeMillis()-startTime;
 					System.out.println("Temps de recherche dans l'arbre plus draw "+elapsed+" ms");
 					
 					// affiche les bordure de la fenetre
 					gc.setStroke(Color.RED);
-					gc.strokeLine(mainClass.getWindowingBox().getXstart(),mainClass.getWindowingBox().getYstart(),mainClass.getWindowingBox().getXend()  ,mainClass.getWindowingBox().getYstart());
-					gc.strokeLine(mainClass.getWindowingBox().getXstart(),mainClass.getWindowingBox().getYend()  ,mainClass.getWindowingBox().getXend()  ,mainClass.getWindowingBox().getYend());
-					gc.strokeLine(mainClass.getWindowingBox().getXstart(),mainClass.getWindowingBox().getYstart(),mainClass.getWindowingBox().getXstart(),mainClass.getWindowingBox().getYend());
-					gc.strokeLine(mainClass.getWindowingBox().getXend()  ,mainClass.getWindowingBox().getYstart(),mainClass.getWindowingBox().getXend()  ,mainClass.getWindowingBox().getYend());
+					gc.strokeLine(box.getXstart(),box.getYstart(),box.getXend()  ,box.getYstart());
+					gc.strokeLine(box.getXstart(),box.getYend()  ,box.getXend()  ,box.getYend());
+					gc.strokeLine(box.getXstart(),box.getYstart(),box.getXstart(),box.getYend());
+					gc.strokeLine(box.getXend()  ,box.getYstart(),box.getXend()  ,box.getYend());
 					
 					
         			/// END DRAW BOX
