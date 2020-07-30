@@ -110,17 +110,17 @@ public class PrioritySearchTree
 	 */
 	public ArrayList<Segment> queryPrioSearchTree(final WindowingBox window)
 	{
-		ArrayList<Segment> res;
+		ArrayList<Segment> res = new ArrayList<>();
 
 		this.bigMarkQy(window.getYend());
 		this.smallMarkQy(window.getYstart()); 
 		//recherche centre et gauche car meme borne y
 
 		// recherche ceux qui ont leurs point min dans le centre 
-		res = researchCenterLeft(window,Choice.CENTER);
+		researchCenterLeft(window,Choice.CENTER,res);
 
 		//recherche ceux qui ont une borne en dehors 
-		res.addAll( researchCenterLeft(window,Choice.LEFT) );
+		researchCenterLeft(window,Choice.LEFT,res);
 
 		this.unBigMarkQy();
 		this.unSmallMarkQy();
@@ -132,10 +132,10 @@ public class PrioritySearchTree
 	 * Execute la recherche pour les points dans le centre de la fenetre ou sur la bande gauche.
 	 * @param window fenetre de windowing
 	 * @param choice center ou left
+	 * @param seg    ArrayList dans laquelle on ajoute les segments accepter.
 	 */
-	private ArrayList<Segment> researchCenterLeft(final WindowingBox window,final Choice choice)
+	private void researchCenterLeft(final WindowingBox window,final Choice choice,ArrayList<Segment> seg)
 	{
-		ArrayList<Segment> segAccepted = new ArrayList<>();
 
 		// prcourir le chemin commun ou bigMark et smallMark sont confondu
 		PrioritySearchTree tmp        = this;
@@ -148,7 +148,7 @@ public class PrioritySearchTree
 		while ( same ) 
 		{
 			if(accepted(tmp.root,window,choice))
-				segAccepted.add(tmp.root);
+				seg.add(tmp.root);
 			
 			// si bigmark et small mark sont a droite 
 			if(tmp.right!=null && tmp.right.root.isBigMarkY() && tmp.right.root.isSmallMarkY())
@@ -165,10 +165,8 @@ public class PrioritySearchTree
 			}
 		}
 
-		if(firstBig   != null) segAccepted.addAll( firstBig.travelBigMarkY(window,choice)     );
-		if(firstSmall != null) segAccepted.addAll( firstSmall.travelSmallMarkY(window,choice) );
-
-		return segAccepted;
+		if(firstBig   != null) firstBig.travelBigMarkY(window,choice,seg);
+		if(firstSmall != null) firstSmall.travelSmallMarkY(window,choice,seg);
 	}
 
 	/**
@@ -176,10 +174,10 @@ public class PrioritySearchTree
 	 * 
 	 * @param window fenetre de windowing
 	 * @param choice choix 
+	 * @param seg    ArrayList dans laquelle on ajoute les segments accepter.
 	 */
-	private ArrayList<Segment> travelBigMarkY(final WindowingBox window,final Choice choice)
+	private void travelBigMarkY(final WindowingBox window,final Choice choice,ArrayList<Segment> seg)
 	{
-		ArrayList<Segment> segAccepted = new ArrayList<>();
 		// pour chaque noeud sur le chemin de qy' 
 		PrioritySearchTree tmp = this;
 
@@ -188,13 +186,13 @@ public class PrioritySearchTree
 		{
 			// si le noeud est accepter dessiner le segment
 			if(accepted(tmp.root,window,choice))
-				segAccepted.add(tmp.root);
+				seg.add(tmp.root);
 
 			// si big mark est a droite et que small mark n y est pas 
 			if(tmp.right != null && tmp.right.root.isBigMarkY())
 			{ 
 				// et que a left n est pas vide 
-				if(	tmp.left != null ) segAccepted.addAll( tmp.left.reportInSubTree(window,choice) );
+				if(	tmp.left != null ) tmp.left.reportInSubTree(window,choice,seg);
 
 				tmp = tmp.right;
 			}
@@ -202,7 +200,6 @@ public class PrioritySearchTree
 			else if(tmp.left != null && tmp.left.root.isBigMarkY()) tmp = tmp.left;
 			else break;
 		}
-		return segAccepted;
 	}
 
 	/**
@@ -210,10 +207,10 @@ public class PrioritySearchTree
 	 * 
 	 * @param window fenetre de windowing
 	 * @param choice choix 
+	 * @param seg    ArrayList dans laquelle on ajoute les segments accepter.
 	 */
-	private ArrayList<Segment> travelSmallMarkY(final WindowingBox window,final Choice choice)
+	private void travelSmallMarkY(final WindowingBox window,final Choice choice,ArrayList<Segment> seg)
 	{
-		ArrayList<Segment> res = new ArrayList<>();
 		// pour chaque noeud sur le chemin de qy' 
 		PrioritySearchTree tmp = this;
 
@@ -222,13 +219,13 @@ public class PrioritySearchTree
 		{
 			// si le noeud est accepter
 			if(accepted(tmp.root,window,choice))
-				res.add(tmp.root);
+				seg.add(tmp.root);
 			
 			// si small mark est a gauche et que small mark n y est pas 
 			if(tmp.left != null && tmp.left.root.isSmallMarkY() )
 			{ 
 				// et que a left n est pas vide 
-				if(	tmp.right != null )  res.addAll( tmp.right.reportInSubTree(window,choice) );
+				if(	tmp.right != null ) tmp.right.reportInSubTree(window,choice,seg);
 
 				tmp = tmp.left;
 			}
@@ -236,7 +233,6 @@ public class PrioritySearchTree
 			else if(tmp.right != null && tmp.right.root.isSmallMarkY()) tmp = tmp.right;
 			else break;
 		}
-		return res;
 	}
 
 	/**
@@ -263,22 +259,20 @@ public class PrioritySearchTree
 	 * Report dans le sous arbre les segments qui sont valide selon le choix slectionner.
 	 * @param win fenetre de windowing
 	 * @param choice choix
+	 * @param seg    ArrayList dans laquelle on ajoute les segments accepter.   
 	 */
-	private ArrayList<Segment> reportInSubTree(final WindowingBox win,final Choice choice)
+	private void reportInSubTree(final WindowingBox win,final Choice choice,ArrayList<Segment> seg)
 	{
-		ArrayList<Segment> res = new ArrayList<>();
 		// on doit report dans le sub tree 
 		if(accepted(root,win,choice))
-			res.add(root);
+			seg.add(root);
 
 		if(right != null
 				&& right.root.getX() <= borneXsup(choice, win) ) // pour s arreter a x max 
-			res.addAll( right.reportInSubTree(win,choice) );
+			right.reportInSubTree(win,choice,seg);
 		if(left  != null 
 				&& left.root.getX()  <= borneXsup(choice, win) ) // pour s arreter a x max
-			res.addAll( left.reportInSubTree(win,choice) );
-
-		return res;
+			left.reportInSubTree(win,choice,seg);
 	}
 
 	/**
