@@ -162,28 +162,20 @@ public class PrioritySearchTree
 	 */
 	private void travelBigMarkY(final WindowingBox window,final Choice choice,ArrayList<Segment> seg)
 	{
-		// pour chaque noeud sur le chemin de qy' 
-		PrioritySearchTree tmp = this;
+		// si le noeud est accepter dessiner le segment
+		if(accepted(root,window,choice))
+			seg.add(root);
+		
+		// si big mark est a droite et que small mark n y est pas 
+		if(right != null && right.root.isBigMarkY())
+		{ 
+			// et que a left n est pas vide 
+			if(	left != null ) left.reportInSubTree(window,choice,seg);
 
-		// tant que le noeud n est pas vide et que son x est plus petit que x min 
-		while( tmp != null ) // garde fous
-		{
-			// si le noeud est accepter dessiner le segment
-			if(accepted(tmp.root,window,choice))
-				seg.add(tmp.root);
-
-			// si big mark est a droite et que small mark n y est pas 
-			if(tmp.right != null && tmp.right.root.isBigMarkY())
-			{ 
-				// et que a left n est pas vide 
-				if(	tmp.left != null ) tmp.left.reportInSubTree(window,choice,seg);
-
-				tmp = tmp.right;
-			}
-			// si big mark est a gauche
-			else if(tmp.left != null && tmp.left.root.isBigMarkY()) tmp = tmp.left;
-			else break;
+			right.travelBigMarkY(window, choice, seg);
 		}
+		// si big mark est a gauche
+		else if(left != null && left.root.isBigMarkY()) left.travelBigMarkY(window, choice, seg);
 	}
 
 	/**
@@ -195,28 +187,20 @@ public class PrioritySearchTree
 	 */
 	private void travelSmallMarkY(final WindowingBox window,final Choice choice,ArrayList<Segment> seg)
 	{
-		// pour chaque noeud sur le chemin de qy' 
-		PrioritySearchTree tmp = this;
+		// si le noeud est accepter
+		if(accepted(root,window,choice))
+			seg.add(root);
 
-		// tant que le noeud n est pas vide et que son x est plus petit que x min 
-		while( tmp != null )
-		{
-			// si le noeud est accepter
-			if(accepted(tmp.root,window,choice))
-				seg.add(tmp.root);
+		// si small mark est a gauche et que small mark n y est pas 
+		if(left != null && left.root.isSmallMarkY() )
+		{ 
+			// et que a left n est pas vide 
+			if(	right != null ) right.reportInSubTree(window,choice,seg);
 			
-			// si small mark est a gauche et que small mark n y est pas 
-			if(tmp.left != null && tmp.left.root.isSmallMarkY() )
-			{ 
-				// et que a left n est pas vide 
-				if(	tmp.right != null ) tmp.right.reportInSubTree(window,choice,seg);
-
-				tmp = tmp.left;
-			}
-			// si small mark est a droite
-			else if(tmp.right != null && tmp.right.root.isSmallMarkY()) tmp = tmp.right;
-			else break;
+			left.travelSmallMarkY(window, choice, seg);
 		}
+		// si small mark est a droite
+		else if(right != null && right.root.isSmallMarkY()) right.travelSmallMarkY(window, choice, seg);
 	}
 
 	/**
