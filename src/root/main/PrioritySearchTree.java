@@ -2,7 +2,6 @@ package root.main;
 
 import java.util.ArrayList;
 
-import javafx.scene.canvas.GraphicsContext;
 
 /**
  * Classe qui represente a arbre de recherche a priorite.
@@ -14,7 +13,7 @@ public class PrioritySearchTree
 	private PrioritySearchTree left  = null;
 	private PrioritySearchTree right = null;
 
-	public enum Choice {CENTER,LEFT,DOWN}
+	public enum Choice {CENTER,LEFT}
 	
 	/**
 	 * Precondition la liste doit etre triee par ordre decroissant selon y 
@@ -125,12 +124,6 @@ public class PrioritySearchTree
 
 		this.unBigMarkQy();
 		this.unSmallMarkQy();
-
-		// recherche le min devient le max
-		this.bigMarkQy(window.getYstart());
-		// comme il y a seulement une big mark un seul parcours est necessaire.
-		this.travelBigMarkY(window,Choice.DOWN); 
-		this.unBigMarkQy();
 
 		return res;
 	}
@@ -259,7 +252,6 @@ public class PrioritySearchTree
 	{
 		switch(choice)
 		{
-			case DOWN:   return win.getXend();
 			case CENTER: return win.getXend();
 			case LEFT:   return win.getXstart();
 		}
@@ -304,22 +296,17 @@ public class PrioritySearchTree
 			case CENTER:
 				if (win.getXstart() <= seg.getX() && seg.getX() <= win.getXend()
 					&& win.getYstart() <= seg.getY() && seg.getY() <= win.getYend())
-					return true;
-				break;
+					{
+						return true;
+					}break;
 			case LEFT:
 				if (seg.getX() <= win.getXstart()      // le premier point est a gauche de la fenetre
 					&& win.getYstart() <= seg.getY() && seg.getY() <= win.getYend()
 					&&win.getXstart() <= seg.getXend() 		 // le second point est dans la fenetre dans la borne y 
 					&& win.getYstart() <= seg.getYend() && seg.getYend() <= win.getYend())
-					return true;
-				break;
-			case DOWN:
-				if (win.getXstart() <= seg.getX() && seg.getX() <= win.getXend() // le premier point est en dessous de la fenetre
-					&& seg.getY() <= win.getYstart() 
-					&& win.getXstart() <= seg.getXend() && seg.getXend() <= win.getXend() // le second point est dans la fenetre par rapport a x et au dessus de y min
-					&& win.getYstart() <= seg.getYend() )
-					return true;
-				break;
+					{
+						return true;
+					}break;
 		}
 		return false;
 	}

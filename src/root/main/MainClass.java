@@ -52,6 +52,9 @@ public class MainClass
 					segHor.add(s);	
 			}
 
+			Segment.sort(segHor);
+			Segment.sort(segVer);
+			
 			this.treeHor = new PrioritySearchTree(segHor);
 			this.treeVer = new PrioritySearchTree(segVer);
 			
