@@ -136,37 +136,21 @@ public class PrioritySearchTree
 	 */
 	private void researchCenterLeft(final WindowingBox window,final Choice choice,ArrayList<Segment> seg)
 	{
+		if(accepted(root,window,choice))
+			seg.add(root);
 
-		// prcourir le chemin commun ou bigMark et smallMark sont confondu
-		PrioritySearchTree tmp        = this;
-		PrioritySearchTree firstBig   = null;
-		PrioritySearchTree firstSmall = null;
-
-		// vrai tant que big et small sont confondu
-		boolean same = true;
-
-		while ( same ) 
+		// si bigmark et small mark sont a droite 
+		if(right!=null && right.root.isBigMarkY() && right.root.isSmallMarkY())
+			right.researchCenterLeft(window, choice, seg);
+		// sinon si big mark et small mark sont a gauche
+		else if(left!=null && left.root.isBigMarkY() && left.root.isSmallMarkY())
+			left.researchCenterLeft(window, choice, seg);
+		// sinon si big et small ne sont pas confondu
+		else
 		{
-			if(accepted(tmp.root,window,choice))
-				seg.add(tmp.root);
-			
-			// si bigmark et small mark sont a droite 
-			if(tmp.right!=null && tmp.right.root.isBigMarkY() && tmp.right.root.isSmallMarkY())
-				tmp = tmp.right;
-			// si big mark et small mark sont a gauche
-			else if(tmp.left!=null && tmp.left.root.isBigMarkY() && tmp.left.root.isSmallMarkY())
-				tmp = tmp.left;
-			// sinon si big et small ne sont pas confondu
-			else
-			{
-				if(tmp.right !=null && tmp.right.root.isBigMarkY()) firstBig = tmp.right;
-				if(tmp.left !=null && tmp.left.root.isSmallMarkY()) firstSmall = tmp.left;
-				same = false;
-			}
+			if(right !=null && right.root.isBigMarkY()) right.travelBigMarkY(window,choice,seg);
+			if(left !=null && left.root.isSmallMarkY()) left.travelSmallMarkY(window,choice,seg);
 		}
-
-		if(firstBig   != null) firstBig.travelBigMarkY(window,choice,seg);
-		if(firstSmall != null) firstSmall.travelSmallMarkY(window,choice,seg);
 	}
 
 	/**

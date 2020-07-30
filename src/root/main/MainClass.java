@@ -78,15 +78,9 @@ public class MainClass
 
 		// change le referenciel de la fenetre de windowing
 		for(Segment s : treeVer.queryPrioSearchTree(new WindowingBox(box.getYstart(), box.getXstart(), box.getYend(), box.getXend())))
-		{
 			res.add(new Segment(s.getY(),s.getX(),s.getYend(),s.getXend()));
-		}
 
 		return res;
-		//// TO DO AJOUTER EN CHANGENT DE REFERENCIEL
-		
-		// change le referenciel de la fenetre de windowing
-		// treeVer.queryPrioSearchTree(new WindowingBox(box.getYstart(), box.getXstart(), box.getYend(), box.getXend())); 
 	}
 	
 	/**
