@@ -5,10 +5,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import jdk.jfr.Unsigned;
-
-import java.lang.NumberFormatException;
-
 /**
  * Classe qui s'occupe de charger le fichier et faire le lien entre la partie 
  * logique et la partie graphique

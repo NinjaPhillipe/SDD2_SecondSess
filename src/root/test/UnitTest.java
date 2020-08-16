@@ -32,7 +32,7 @@ public class UnitTest {
     @Test
     public void buildTree()
     {   
-        MainClass mainclass = new MainClass("../testFile/segment.txt");
+        MainClass mainclass = new MainClass("../testFile/segment.txt",false);
 
         // assert que les segments horizontal sont bien dans l arbre hori
         assertTrue(checkInTree(mainclass.getTreeHor(),new Segment(0,3,6,3)));
