@@ -15,6 +15,7 @@ import javafx.scene.SubScene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -31,7 +32,6 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.scene.control.Alert;
 
 import root.main.MainClass;
-import root.main.PrioritySearchTree;
 import root.main.WindowingBox;
 import root.main.Segment;
 
@@ -52,7 +52,9 @@ public class TestProg extends Application
     private TextField textfield_x_end;
     private TextField textfield_y_end;
     
-    public boolean redraw = true;
+	private boolean redraw = true;
+	
+	private boolean debugMode = false;
     
     private MainClass mainClass;
     private Stage stage;
@@ -112,7 +114,13 @@ public class TestProg extends Application
             public void handle(final long arg0) {
 				// redessine la scene si elle en a besoin
 
-				if(redraw && mainClass != null) {
+				// pour pouvoir clear le canvas
+				if(redraw && mainClass == null)
+				{
+					// clear la scene pour ne pas avoir de superposition
+					gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+					gc.save();
+				}else if(redraw && mainClass != null) {
 					
 					// clear la scene pour ne pas avoir de superposition
 					gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -128,7 +136,7 @@ public class TestProg extends Application
 					
 					WindowingBox box = mainClass.getWindowingBox();
 
-					if(drawALL)
+					if(debugMode && drawALL)
 					{
 						for (Segment seg : mainClass.ALLSEG)
 						{
@@ -187,15 +195,16 @@ public class TestProg extends Application
 					System.out.println("WINDOWING SETTINGS");
 					hbox_win_settings.setVisible(true);
 				}else
+				{
 					System.out.println("NO FILE LOADED");
 
 					Alert alert = new Alert(AlertType.WARNING);
 					alert.setTitle("Warning");
-					alert.setHeaderText("Fichier manquant");
-					alert.setContentText("Veuillez sélectionner un fichier adéquat!");
+					alert.setHeaderText("Missing file");
+					alert.setContentText("please choose a correct file!");
 
 					alert.showAndWait();
-
+				}
 			}
 		} );
 		
@@ -217,8 +226,8 @@ public class TestProg extends Application
 
 					Alert alert = new Alert(AlertType.WARNING);
 					alert.setTitle("Warning");
-					alert.setHeaderText("Fichier manquant");
-					alert.setContentText("Veuillez sélectionner un fichier adéquat!");
+					alert.setHeaderText("Missing file");
+					alert.setContentText("please choose a correct file!");
 
 					alert.showAndWait();
 
@@ -236,16 +245,50 @@ public class TestProg extends Application
 				final File file = fileChooser.showOpenDialog(stage);
 				if(file != null) // si aucun fichier n est choisi
 				{
-					mainClass = new MainClass(file.getAbsolutePath());
+					mainClass = new MainClass(file.getAbsolutePath(),debugMode);
 					redraw = true;
 				}
 			}
 		} );
+
+		final CheckMenuItem m4 = new CheckMenuItem("DebugMode");
+		m4.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				debugMode = !debugMode;
+				if(debugMode)
+				{
+					System.out.println("Debug Mode Enabled!");
+					mainClass = null;
+					redraw = true;
+				}
+				else 
+					System.out.println("Debug Mode Disabled!");
+
+				// reset
+				drawALL = false;
+
+				if(mainClass != null)
+				{
+					Alert alert = new Alert(AlertType.WARNING);
+					alert.setTitle("Warning");
+					if(debugMode)
+						alert.setHeaderText("Debug mode nabled");
+					else
+						alert.setHeaderText("Debug mode disabled");
+					alert.setContentText("you need to reload the file to change debug mode state!");
+
+					alert.showAndWait();
+					mainClass = null;
+					redraw = true;
+				}
+			}
+		});
 		
 		// ajoute les boutons au menu
 		m.getItems().add(m1);
 		m.getItems().add(m2);
 		m.getItems().add(m3);
+		m.getItems().add(m4);
 
 		// ajoute le menu a la MenuBar
 		res.getMenus().add(m);
@@ -300,6 +343,7 @@ public class TestProg extends Application
 					tmpBox.set_start_y(Integer.parseInt(tmp));
 
 				tmp = textfield_y_end.getText();
+				System.out.println(tmp);
 				if(tmp.isEmpty()) // si le champ est vide mettre a l'infini
 					tmpBox.setEndYinfty();
 				else // sinon mettre la valeur contenue	
@@ -351,7 +395,10 @@ public class TestProg extends Application
         return res;
 	}
 	
-	public void setRedraw() { this.redraw = true; }
+	public boolean getRedraw()    { return this.redraw; }
+	public void setRedraw()       { this.redraw = true; }
+
+	public boolean getDebugMode() { return this.debugMode; }
 	
 	public static void main(final String[] args) { launch(args); }
 }

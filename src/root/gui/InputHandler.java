@@ -66,10 +66,13 @@ public class InputHandler implements EventHandler<InputEvent>
 
 		// TEST
 		case "P":
-			System.out.println("TEST");
-			prog.drawALL = !prog.drawALL;
-			prog.redraw = true;
-			break;
+			if(prog.getDebugMode())
+			{
+				System.out.println("Debug segment");
+				prog.drawALL = !prog.drawALL;
+				prog.setRedraw();
+				break;
+			}
 		}
 	}
 }

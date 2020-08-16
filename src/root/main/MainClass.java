@@ -5,6 +5,10 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import jdk.jfr.Unsigned;
+
+import java.lang.NumberFormatException;
+
 /**
  * Classe qui s'occupe de charger le fichier et faire le lien entre la partie 
  * logique et la partie graphique
@@ -18,14 +22,17 @@ public class MainClass
 
 	// TEST TEST 
 	public ArrayList<Segment> ALLSEG;
+
+	private boolean DEBUG_MODE = false;
 	
 	/**
 	 * Initialise la classe en chargant le fichier depuis la chaine de 
 	 * caractere passee en parametre.
 	 * @param path Chemin jusqu'au fichier
 	 */
-	public MainClass(String path) 
+	public MainClass(String path,boolean debug) 
 	{
+		DEBUG_MODE = debug;
 		box = new WindowingBox(0, 0, 200, 200);
 		try 
 		{
@@ -37,19 +44,19 @@ public class MainClass
 			ArrayList<Segment> segHor = new ArrayList<>();
 			ArrayList<Segment> segVer = new ArrayList<>();
 
-			ALLSEG = new ArrayList<>();
+			if(DEBUG_MODE)
+				ALLSEG = new ArrayList<>();
 
 			for(Segment s: loadFromFile(path))
 			{
-				// TEST
-				ALLSEG.add(s);
-				// TEST END
+				if(DEBUG_MODE)
+					ALLSEG.add(s);
 
 				if(s.getX() == s.getXend()) // si vertical
 					// rotation du referenciel
 					// s.getY() etant le minimum car le poit minimum est devant
 					// et que s.getX() est egale a s.getXend()
-					segVer.add(new Segment(s.getY(),s.getX(),s.getYend(),s.getX() ));
+					segVer.add(new Segment(s.getY(),s.getX(),s.getYend(),s.getX()));
 				else
 					segHor.add(s);	
 			}
@@ -57,8 +64,11 @@ public class MainClass
 			Segment.sort(segHor);
 			Segment.sort(segVer);
 			
-			this.treeHor = new PrioritySearchTree(segHor);
-			this.treeVer = new PrioritySearchTree(segVer);
+			if(segHor.size() > 0)
+				this.treeHor = new PrioritySearchTree(segHor);
+
+			if(segVer.size() > 0)
+				this.treeVer = new PrioritySearchTree(segVer);
 			
 		} catch (FileNotFoundException e) 
 		{
@@ -76,11 +86,21 @@ public class MainClass
 	 */
 	public ArrayList<Segment> computeTree() 
 	{ 
-		ArrayList<Segment> res = treeHor.queryPrioSearchTree(box);
+		ArrayList<Segment> res,resv = null;
+		// si l'arbre hori n est pas vide 
+		if(treeHor != null) 
+			res = treeHor.queryPrioSearchTree(box);
+		else
+			res = new ArrayList<>();
 
-		// change le referenciel de la fenetre de windowing
-		for(Segment s : treeVer.queryPrioSearchTree(new WindowingBox(box.getYstart(), box.getXstart(), box.getYend(), box.getXend())))
-			res.add(new Segment(s.getY(),s.getX(),s.getYend(),s.getXend()));
+		// si l'arbre verti n est pas vide 
+		if(treeVer != null)
+		{
+			resv = treeVer.queryPrioSearchTree(new WindowingBox(box.getYstart(), box.getXstart(), box.getYend(), box.getXend()));
+			// change le referenciel de la fenetre de windowing
+			for(Segment s : resv )
+				res.add(new Segment(s.getY(),s.getX(),s.getYend(),s.getXend()));
+		}
 
 		return res;
 	}
@@ -98,9 +118,20 @@ public class MainClass
 		File file = new File(file_name);
 		Scanner sc = new Scanner(file);
 		
+		int lineCounter = 0; 
+
 		// tant qu il y a des lignes dans le fichier.
 		while(sc.hasNextLine()) {
-			Segment seg = new Segment(sc.nextLine());
+			lineCounter++;
+			Segment seg;
+			try {
+				seg = new Segment(sc.nextLine());
+			} catch (java.lang.NumberFormatException e) {
+				// passe a la ligne suivante
+				System.out.println("Wrong format line number :"+lineCounter);
+				break;
+			}
+
 			
 			// Modifie les segments facon a ce que la coordonnees min
 			// se trouve en premier grace a la propriete que les segments
@@ -129,7 +160,7 @@ public class MainClass
 	// set et get
 	public void setWindowingBox(WindowingBox box) { this.box = box; }
 	
-	// public PrioritySearchTree getTreeHor()  { return treeHor; }
-	// public PrioritySearchTree getTreeVer()  { return treeHor; }
+	public PrioritySearchTree getTreeHor()  { return treeHor; }
+	public PrioritySearchTree getTreeVer()  { return treeVer; }
 	public WindowingBox getWindowingBox()   { return box;     }
 }

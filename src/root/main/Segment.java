@@ -73,6 +73,13 @@ public class Segment
 		return "( "+x+" | "+y+" ) X ( " +xEnd+" | "+yEnd+" )" ;
 	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		Segment s = (Segment) o;
+		return this.x==s.x && this.y==s.y && this.xEnd==s.xEnd && this.yEnd==s.yEnd;
+	}
+
 	// set get
 	public void setX(int x)    {this.x = x;}
 	public void setY(int y )   {this.y = y;}
