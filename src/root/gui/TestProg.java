@@ -20,6 +20,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -27,6 +28,8 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.scene.control.Alert;
+
 import root.main.MainClass;
 import root.main.PrioritySearchTree;
 import root.main.WindowingBox;
@@ -185,6 +188,14 @@ public class TestProg extends Application
 					hbox_win_settings.setVisible(true);
 				}else
 					System.out.println("NO FILE LOADED");
+
+					Alert alert = new Alert(AlertType.WARNING);
+					alert.setTitle("Warning");
+					alert.setHeaderText("Fichier manquant");
+					alert.setContentText("Veuillez sélectionner un fichier adéquat!");
+
+					alert.showAndWait();
+
 			}
 		} );
 		
@@ -192,12 +203,26 @@ public class TestProg extends Application
 		m2.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(final ActionEvent t) {
 				System.out.println("Center ");
-				WindowingBox tmp = mainClass.getWindowingBox();
-				if(tmp.getXstart() != tmp.MIN_VALUE && tmp.getXstart() != tmp.MIN_VALUE )
-					camera.setPos(-tmp.getXstart(), -tmp.getYstart());
-				else
-					camera.setPos(0, 0);
-				setRedraw();
+				if(mainClass != null)
+				{
+					WindowingBox tmp = mainClass.getWindowingBox();
+					if(tmp.getXstart() != tmp.MIN_VALUE && tmp.getXstart() != tmp.MIN_VALUE )
+						camera.setPos(-tmp.getXstart(), -tmp.getYstart());
+					else
+						camera.setPos(0, 0);
+					setRedraw();
+				}else
+				{
+					System.out.println("NO FILE LOADED");
+
+					Alert alert = new Alert(AlertType.WARNING);
+					alert.setTitle("Warning");
+					alert.setHeaderText("Fichier manquant");
+					alert.setContentText("Veuillez sélectionner un fichier adéquat!");
+
+					alert.showAndWait();
+
+				}	
 			}
 		} );
 

@@ -117,10 +117,10 @@ public class PrioritySearchTree
 		//recherche centre et gauche car meme borne y
 
 		// recherche ceux qui ont leurs point min dans le centre 
-		researchCenterLeft(window,Choice.CENTER,res);
+		research(window,Choice.CENTER,res);
 
 		//recherche ceux qui ont une borne en dehors 
-		researchCenterLeft(window,Choice.LEFT,res);
+		research(window,Choice.LEFT,res);
 
 		this.unBigMarkQy();
 		this.unSmallMarkQy();
@@ -134,17 +134,17 @@ public class PrioritySearchTree
 	 * @param choice center ou left
 	 * @param seg    ArrayList dans laquelle on ajoute les segments accepter.
 	 */
-	private void researchCenterLeft(final WindowingBox window,final Choice choice,ArrayList<Segment> seg)
+	private void research(final WindowingBox window,final Choice choice,ArrayList<Segment> seg)
 	{
 		if(accepted(root,window,choice))
 			seg.add(root);
 
 		// si bigmark et small mark sont a droite 
 		if(right!=null && right.root.isBigMarkY() && right.root.isSmallMarkY())
-			right.researchCenterLeft(window, choice, seg);
+			right.research(window, choice, seg);
 		// sinon si big mark et small mark sont a gauche
 		else if(left!=null && left.root.isBigMarkY() && left.root.isSmallMarkY())
-			left.researchCenterLeft(window, choice, seg);
+			left.research(window, choice, seg);
 		// sinon si big et small ne sont pas confondu
 		else
 		{

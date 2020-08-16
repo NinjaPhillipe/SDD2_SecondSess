@@ -47,7 +47,9 @@ public class MainClass
 
 				if(s.getX() == s.getXend()) // si vertical
 					// rotation du referenciel
-					segVer.add(new Segment(s.getY(),s.getX(),s.getYend(),s.getXend()));
+					// s.getY() etant le minimum car le poit minimum est devant
+					// et que s.getX() est egale a s.getXend()
+					segVer.add(new Segment(s.getY(),s.getX(),s.getYend(),s.getX() ));
 				else
 					segHor.add(s);	
 			}
